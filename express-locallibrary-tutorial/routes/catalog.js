@@ -15,9 +15,11 @@ var book_instance_controller = require('../controllers/bookinstanceController');
 router.get('/', book_controller.index);
 
 // GET request for creating a Book. NOTE This must come before routes that display Book (uses id).
+// This will first show the form to create the Book.
 router.get('/book/create', book_controller.book_create_get);
 
 // POST request for creating Book
+// This will save the information and redirecting to the detail page, or redisplaying the form with errors
 router.post('/book/create', book_controller.book_create_post);
 
 // GET request to delete Book

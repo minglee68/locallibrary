@@ -1,9 +1,10 @@
 var mongoose = require('mongoose');
+var moment = require('moment');
 
 var Schema = mongoose.Schema;
 
 var BookInstanceSchema = new Schema({
-	book: {type: Schema.ObjectId, ref: 'book', required: true},
+	book: {type: Schema.ObjectId, ref: 'Book', required: true},
 	imprint: {type: String, required: true},
 	status: {type: String, required: true, enum: ['Available', 'Maintenance', 'Loaned', 'Reserved'], default: 'Maintenance'},
 	due_back: {type: Date, default: Date.now}
@@ -12,6 +13,11 @@ var BookInstanceSchema = new Schema({
 // Virtual for bookinstance's URL
 BookInstanceSchema.virtual('url').get(function() {
 	return '/catalog/bookinstance/' + this._id;
+});
+
+// Format date output nicely
+BookInstanceSchema.virtual('due_back_formatted').get(function() {
+	return moment(this.due_back).format('MMMM Do, YYYY');
 });
 
 // Export model
