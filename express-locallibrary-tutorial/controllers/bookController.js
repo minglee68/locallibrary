@@ -153,13 +153,49 @@ exports.book_create_post = [
 ];
 
 // Display Book delete form on GET
-exports.book_delete_get = function(req, res){
-	res.send('NOT IMPLEMENTED: Book delete GET');
+exports.book_delete_get = function(req, res, next){
+	async.parallel({
+		book: function(callback){
+			Book.findById(req.params.id).exec(callback);
+		},
+		books_bookinstances: function(callback){
+			BookInstance.find({ 'book': req.params.id }).exec(callback);
+		},
+	},function(err, results){
+		if (err) { return next(err); }
+		if (results.book==null){//No results
+			res.redirect('/catalog/books');
+		}
+		// successful, so render
+		res.render('book_delete', { title: 'Delete Book', book: results.book, book_bookinstances: results.books_bookinstances });
+	});
 };
 
 // Display Book delete on POST
-exports.book_delete_post = function(req, res){
-	res.send('NOT IMPLEMENTED: Book delete POST');
+exports.book_delete_post = function(req, res, next){
+	async.parallel({
+		book: function(callback){
+			Book.findById(req.body.bookid).exec(callback);
+		},
+		books_bookinstances: function(callback){
+			BookInstance.find({ 'book': req.body.bookid }).exec(callback);
+		},
+	}, function(err, results){
+		if (err) { return next(err); }
+		// success
+		if (results.books_bookinstances.length > 0){
+			// Book has book instances. Render in same way as for GET Route
+			res.render('book_delete', { title: 'Delete Book', book: results.book, book_bookinstances: results.books_bookinstances });
+			return;
+		} else {
+			// Book has no book instances, so delete object and reidrect to the list of books.
+			Book.findByIdAndRemove(req.body.bookid, function deleteBook(err) {
+				if (err) { return next(err); }
+				// success - go to book list
+				res.redirect('/catalog/books');
+			});
+		}
+	});
 };
 
 // Display Book update form on GET
@@ -268,29 +304,5 @@ exports.book_update_post = [
 		}
 	}
 ]; 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
